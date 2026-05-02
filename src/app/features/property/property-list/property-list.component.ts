@@ -250,7 +250,7 @@ export class PropertyListComponent implements OnInit {
   }
 
   private async loadProperties() {
-    const response = await this.state.runObservable(this.api.properties.list(), {
+    const response = await this.state.runObservable(this.api.properties.list() as any, {
       errorMessage: 'Failed to load properties.',
       successMessage: 'Property list synced with backend.',
     });

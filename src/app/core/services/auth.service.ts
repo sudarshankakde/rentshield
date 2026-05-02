@@ -62,6 +62,9 @@ export class AuthService {
   private readonly _token = signal<string | null>(this.restoredSession?.token ?? null);
   readonly token = this._token.asReadonly();
 
+  private readonly _capabilities = signal<any>(null);
+  readonly capabilities = this._capabilities.asReadonly();
+
   private readonly _preAuthToken = signal<string | null>(this.restoredSession?.preAuthToken ?? null);
   readonly preAuthToken = this._preAuthToken.asReadonly();
 
@@ -251,6 +254,17 @@ export class AuthService {
   async loadUiConfig(): Promise<void> {
     if (this._isAuthenticated()) {
       await this.uiConfig.load();
+      await this.loadCapabilities();
+    }
+  }
+
+  async loadCapabilities(): Promise<void> {
+    if (!this._isAuthenticated()) return;
+    try {
+      const caps = await firstValueFrom(this.api.auth.capabilities());
+      this._capabilities.set(caps);
+    } catch (e) {
+      console.error('Failed to load capabilities', e);
     }
   }
 

@@ -1,6 +1,6 @@
 import type { UserRole } from './auth.service';
 import type { Type } from '@angular/core';
-import { Search, Shield, FileText, User, Hammer, Wallet, MessageSquare, AlertTriangle, HelpCircle, LayoutGrid, Users, Settings, Bell } from 'lucide-angular';
+import { Search, Shield, FileText, User, Hammer, Wallet, MessageSquare, AlertTriangle, HelpCircle, LayoutGrid, Users, Bell } from 'lucide-angular';
 
 // ─── Backend-compatible modules only ────────────────────────────────────────
 // ALL entries below now have live backend endpoints.
