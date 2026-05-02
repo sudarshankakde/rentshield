@@ -57,11 +57,35 @@ This document outlines the strict guidelines, architectural patterns, and remain
 
 ---
 
-## 📋 5. TODOs & Next Steps
+## 📋 5. Feature Development Sequence (TODO List)
 
-### Pending Work for Next Sprints
-- [ ] **TanStack Query Migration**: Refactor existing `createRequestState` usage to strictly use `injectQuery()` from TanStack Query for data fetching.
-- [ ] **State Management**: Integrate `@ngrx/store` logic for the multi-step `kyc-workflow.component.ts`.
-- [ ] **Forms Validation Refinement**: Add dynamic debouncing for heavy form inputs (e.g., username availability checks or search queries).
-- [ ] **Test Coverage**: Write `register.component.spec.ts` and `login.component.spec.ts` ensuring all UI states (loading, error, validation) are verified.
-- [ ] **Tenant Module Redesign**: Update `tenancy-timeline.component.ts` to match the new premium glassmorphism dashboard aesthetic.
+To ensure systematic and organized development, all features must be implemented/redesigned strictly in the following sequence. Once a feature is completed, check it off the list.
+
+### Phase 1: Foundation & Identity
+- [x] **1. Auth & Dashboard Module**: Authentication workflows, RBAC guards, Layout structure, and Dashboard landing.
+- [x] **2. Profile Module**: User settings, 2FA toggle, password changes, and personal details.
+- [x] **3. KYC Module**: Identity verification workflows (upload, start, status, admin queue).
+
+### Phase 2: Core Rental Lifecycle
+- [x] **4. Property Module**: Property discovery, filtering, expressing interests, and bookmarking.
+- [ ] **5. Tenancies Module**: Track move-in status, lease timelines, and tenancy details.
+- [ ] **6. Agreements Module**: Document generation, review, and e-signatures.
+- [ ] **7. Finance & Payments Module**: Ledgers, payment triggering, and receipts.
+
+### Phase 3: Lifecycle Operations
+- [ ] **8. Maintenance Module**: Raising and tracking repair requests.
+- [ ] **9. Chat Module**: Real-time communication for maintenance and support.
+- [ ] **10. Disputes Module**: Raising and resolving claims or conflicts.
+- [ ] **11. Exit Module**: Move-out requests, inspections, and settlements.
+
+### Phase 4: Community & Extended Services
+- [ ] **12. Notifications & Notices**: Real-time alerts, notice boards, and community updates.
+- [ ] **13. Experts Module**: Discovering and booking service specialists (cleaning, movers, etc.).
+- [ ] **14. Society Module**: Building management, amenity bookings, and resident directory.
+
+### Phase 5: Administration & Support
+- [ ] **15. Support Hub**: Knowledge base, ticketing system, and CSAT.
+- [ ] **16. Admin Panel**: Global user management, module toggling, KYC reviews, and platform statistics.
+
+---
+**Development Instruction**: For each feature above, ensure it adheres to the Glassmorphism premium design, uses TanStack Query, and matches the backend DTOs.

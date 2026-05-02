@@ -1,11 +1,13 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Search, MapPin, IndianRupee, Filter, Circle, Wifi, Car, Waves, Dumbbell } from 'lucide-angular';
 import { RentShieldApiService } from '../../../core/api/rentshield-api.service';
-import { ToastService } from '../../../core/services/toast.service';
+
 import { readArray, readNumber, readString } from '../../../core/api/request-validation';
-import { createRequestState } from '../../../core/services/request-state.service';
+
+import { injectQuery } from '@tanstack/angular-query-experimental';
+import { firstValueFrom } from 'rxjs';
 
 interface Property {
   id: string;
@@ -137,10 +139,6 @@ interface Property {
         {{ error() }}
       </div>
 
-      <div *ngIf="success()" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-sm font-bold text-emerald-700">
-        {{ success() }}
-      </div>
-
       <div *ngIf="loading()" class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm font-bold text-slate-500">
         Loading properties from backend...
       </div>
@@ -207,10 +205,8 @@ interface Property {
     </div>
   `
 })
-export class PropertyListComponent implements OnInit {
+export class PropertyListComponent {
   private api = inject(RentShieldApiService);
-  private toast = inject(ToastService);
-  private readonly state = createRequestState<Property[]>([]);
 
   readonly SearchIcon = Search;
   readonly MapIcon = MapPin;
@@ -224,10 +220,18 @@ export class PropertyListComponent implements OnInit {
   selectedStatus = signal('All');
   selectedAmenities = signal<string[]>([]);
 
-  properties = signal<Property[]>([]);
-  loading = this.state.loading;
-  error = this.state.error;
-  success = this.state.success;
+  propertiesQuery = injectQuery(() => ({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      const response = await firstValueFrom(this.api.properties.list() as any);
+      return this.extractProperties(response);
+    }
+  }));
+
+  loading = this.propertiesQuery.isLoading;
+  error = computed(() => this.propertiesQuery.error()?.message);
+  
+  properties = computed(() => this.propertiesQuery.data() || []);
 
   uniqueLocations = computed(() => Array.from(new Set(this.properties().map(p => p.location))).sort());
   allAmenities = ['Gym', 'Pool', 'Parking', 'Wifi'];
@@ -245,28 +249,7 @@ export class PropertyListComponent implements OnInit {
     });
   });
 
-  ngOnInit(): void {
-    this.loadProperties();
-  }
-
-  private async loadProperties() {
-    const response = await this.state.runObservable(this.api.properties.list() as any, {
-      errorMessage: 'Failed to load properties.',
-      successMessage: 'Property list synced with backend.',
-    });
-
-    if (!response) {
-      this.properties.set([]);
-      this.toast.error(this.error() ?? 'Failed to load properties.');
-      return;
-    }
-
-    this.properties.set(this.extractProperties(response));
-  }
-
   private extractProperties(payload: unknown): Property[] {
-    // Backend GET /properties returns a raw array directly.
-    // Also handle wrapped shapes { properties: [] } or { results: [] } for forward-compat.
     const source: unknown[] = Array.isArray(payload)
       ? payload
       : (payload && typeof payload === 'object'
@@ -282,7 +265,6 @@ export class PropertyListComponent implements OnInit {
         }
 
         const record = entry as Record<string, unknown>;
-        // Backend status is e.g. 'AVAILABLE', 'RENTED' — map to UI labels
         const statusRaw = readString(record['status'], 'AVAILABLE').toUpperCase();
         const status: Property['status'] = statusRaw === 'RENTED' || statusRaw === 'OCCUPIED' ? 'Occupied' : 'Vacant';
 
