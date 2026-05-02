@@ -1,0 +1,13 @@
+{
+  "status": "success",
+  "message": "2FA verified",
+  "token": "rs_full_access_token_tenant_demo",
+  "expiresIn": 86400,
+  "user": {
+    "id": "usr_tenant_001",
+    "email": "newuser@example.com",
+    "firstName": "Demo",
+    "lastName": "User",
+    "role": "TENANT"
+  }
+}

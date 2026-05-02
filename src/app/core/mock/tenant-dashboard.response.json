@@ -1,0 +1,99 @@
+{
+  "tenant": {
+    "id": "usr_tenant_001",
+    "name": "Demo User",
+    "role": "TENANT",
+    "kycStatus": "PENDING",
+    "trustScore": 82
+  },
+  "currentTenancy": {
+    "tenancyId": "tenancy_mum_001",
+    "propertyName": "Gokuldham Heights",
+    "unit": "A-1204",
+    "city": "Mumbai",
+    "moveInDate": "2024-06-15",
+    "leaseEndDate": "2026-06-14",
+    "monthlyRent": 45000,
+    "societyId": "soc_mum_001"
+  },
+  "modules": [
+    {
+      "id": "identity",
+      "name": "Identity & Security",
+      "description": "Login, 2FA, profile settings, and KYC readiness",
+      "endpoint": "/auth/settings",
+      "method": "PATCH",
+      "status": "Needs KYC",
+      "path": "/profile"
+    },
+    {
+      "id": "properties",
+      "name": "Property Discovery",
+      "description": "Search verified rentals by city, price, and availability",
+      "endpoint": "/properties?city=Mumbai&minPrice=10000",
+      "method": "GET",
+      "status": "Live",
+      "path": "/property"
+    },
+    {
+      "id": "payments",
+      "name": "Payment Vault",
+      "description": "View dues and pay partial or full rent",
+      "endpoint": "/payments/due",
+      "method": "GET",
+      "status": "Due",
+      "path": "/finance"
+    },
+    {
+      "id": "agreements",
+      "name": "Smart Agreements",
+      "description": "Generate and sign rental agreements",
+      "endpoint": "/agreements/generate",
+      "method": "POST",
+      "status": "Ready",
+      "path": "/agreements"
+    },
+    {
+      "id": "society",
+      "name": "Society Ecosystem",
+      "description": "Events, amenities, bookings, and community notices",
+      "endpoint": "/societies/soc_mum_001/events",
+      "method": "GET",
+      "status": "3 Events",
+      "path": "/society"
+    },
+    {
+      "id": "police-verification",
+      "name": "Police & Trust Verification",
+      "description": "Aadhaar OTP and tenancy verification status",
+      "endpoint": "/police-verification/tenancy_mum_001",
+      "method": "GET",
+      "status": "Pending",
+      "path": "/tenancies"
+    }
+  ],
+  "paymentsDue": [
+    {
+      "paymentId": "pay_apr_2026",
+      "label": "April 2026 Rent",
+      "amount": 45000,
+      "paidAmount": 15000,
+      "dueDate": "2026-04-30",
+      "status": "PARTIALLY_PAID"
+    },
+    {
+      "paymentId": "pay_maintenance_0426",
+      "label": "Society Maintenance",
+      "amount": 4500,
+      "paidAmount": 0,
+      "dueDate": "2026-04-28",
+      "status": "PENDING"
+    }
+  ],
+  "verification": {
+    "tenancyId": "tenancy_mum_001",
+    "aadhaarMasked": "XXXX XXXX 9012",
+    "status": "OTP_REQUIRED",
+    "reportUrl": null
+  }
+}

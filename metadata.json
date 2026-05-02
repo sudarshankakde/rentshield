@@ -1,0 +1,6 @@
+{
+  "name": "RentShield",
+  "description": "Enterprise-grade rental infrastructure with RBAC, 2FA, Ledger, and E-Sign modules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

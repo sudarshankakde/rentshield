@@ -1,0 +1,28 @@
+{
+  "query": {
+    "city": "Mumbai",
+    "minPrice": 10000
+  },
+  "results": [
+    {
+      "id": "prop_mum_001",
+      "name": "Gokuldham Heights",
+      "address": "Bandra West, Mumbai",
+      "city": "Mumbai",
+      "rent": 45000,
+      "status": "Occupied",
+      "amenities": ["Gym", "Pool", "Parking"],
+      "image": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&q=80&w=800"
+    },
+    {
+      "id": "prop_mum_002",
+      "name": "Marine Drive Pearl",
+      "address": "Marine Drive, Mumbai",
+      "city": "Mumbai",
+      "rent": 95000,
+      "status": "Vacant",
+      "amenities": ["Gym", "Pool", "Parking", "Wifi"],
+      "image": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800"
+    }
+  ]
+}

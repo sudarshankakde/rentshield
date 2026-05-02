@@ -1,0 +1,41 @@
+{
+  "role": "TENANT",
+  "modules": [
+    {
+      "id": "properties",
+      "label": "Property Discovery",
+      "route": "/property",
+      "feature": "VIEW_PROPERTY"
+    },
+    {
+      "id": "payments",
+      "label": "Payment Vault",
+      "route": "/finance",
+      "feature": "VIEW_PAYMENT_LEDGER"
+    },
+    {
+      "id": "agreements",
+      "label": "Smart Agreements",
+      "route": "/agreements",
+      "feature": "SIGN_AGREEMENT"
+    },
+    {
+      "id": "experts",
+      "label": "Local Expert Marketplace",
+      "route": "/experts",
+      "feature": "BOOK_EXPERT"
+    },
+    {
+      "id": "society",
+      "label": "Society Ecosystem",
+      "route": "/society",
+      "feature": "VIEW_SOCIETY_EVENTS"
+    },
+    {
+      "id": "verification",
+      "label": "Police & Trust Verification",
+      "route": "/tenancies",
+      "feature": "START_POLICE_VERIFICATION"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "role": "TENANT",
+  "can": {
+    "VIEW_PROPERTY": true,
+    "CREATE_PROPERTY": false,
+    "VIEW_PAYMENT_LEDGER": true,
+    "PAY_RENT": true,
+    "DOWNLOAD_RECEIPT": true,
+    "GENERATE_AGREEMENT": false,
+    "SIGN_AGREEMENT": true,
+    "BOOK_EXPERT": true,
+    "OPEN_DISPUTE": true,
+    "VIEW_SOCIETY_EVENTS": true,
+    "BOOK_AMENITY": true,
+    "START_POLICE_VERIFICATION": true
+  }
+}

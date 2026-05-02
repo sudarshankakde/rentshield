@@ -1,0 +1,132 @@
+{
+  "modules": [
+    {
+      "id": "auth",
+      "name": "Authentication & Identity",
+      "route": "/profile",
+      "status": "LIVE",
+      "summary": "Email, mobile OTP, password login, role selection, JWT sessions, profile completion.",
+      "capabilities": ["POST /auth/register", "POST /auth/login", "POST /auth/verify-otp", "POST /auth/refresh", "GET /me"]
+    },
+    {
+      "id": "kyc",
+      "name": "KYC Verification",
+      "route": "/kyc",
+      "status": "PENDING_ACTION",
+      "summary": "Aadhaar, PAN, address proof, selfie/liveness, reviewer queue, and status history.",
+      "capabilities": ["POST /kyc/start", "POST /kyc/upload-document", "GET /kyc/status", "POST /kyc/submit"]
+    },
+    {
+      "id": "property",
+      "name": "Find Property",
+      "route": "/property",
+      "status": "LIVE",
+      "summary": "Search, filters, shortlist, express interest, visit scheduling, property details.",
+      "capabilities": ["GET /properties", "GET /properties/:id", "POST /properties/:id/save", "POST /properties/:id/interest"]
+    },
+    {
+      "id": "slaas",
+      "name": "SLAAS Lease Lifecycle",
+      "route": "/tenancies",
+      "status": "ACTIVE",
+      "summary": "Move-in, obligations, milestones, renewals, notices, SLA tracking, and exit readiness.",
+      "capabilities": ["GET /tenancies/:id/timeline", "POST /tenancies/:id/checklists", "GET /sla/dashboard"]
+    },
+    {
+      "id": "agreements",
+      "name": "Smart Agreement",
+      "route": "/agreements",
+      "status": "READY",
+      "summary": "Templates, clause merge, versions, e-sign, PDF preview, and audit trail.",
+      "capabilities": ["GET /agreements/templates", "POST /agreements/generate", "POST /agreements/:id/send-for-signature"]
+    },
+    {
+      "id": "documents",
+      "name": "Document Vault",
+      "route": "/documents",
+      "status": "LIVE",
+      "summary": "KYC docs, agreement PDFs, receipts, notices, maintenance proofs, and shared links.",
+      "capabilities": ["GET /documents", "POST /documents/upload", "GET /documents/:id/download"]
+    },
+    {
+      "id": "payments",
+      "name": "Payment Vault",
+      "route": "/finance",
+      "status": "PARTIALLY_PAID",
+      "summary": "Rent ledger, deposit, receipts, partial payments, reminders, penalties, and refunds.",
+      "capabilities": ["GET /payments/ledger/:tenancyId", "POST /payments/:paymentId/pay", "GET /payments/receipts"]
+    },
+    {
+      "id": "maintenance",
+      "name": "Maintenance",
+      "route": "/maintenance",
+      "status": "IN_PROGRESS",
+      "summary": "Repair tickets, photos, urgency, assignment, SLA clocks, estimates, and feedback.",
+      "capabilities": ["POST /maintenance/tickets", "GET /maintenance/tickets", "POST /maintenance/tickets/:id/comment"]
+    },
+    {
+      "id": "chat",
+      "name": "Chat Landlord",
+      "route": "/chat",
+      "status": "ONLINE",
+      "summary": "Socket.io chat, message persistence, read receipts, attachments, and context threads.",
+      "capabilities": ["socket: join", "socket: message", "socket: notification"]
+    },
+    {
+      "id": "disputes",
+      "name": "Raise Dispute",
+      "route": "/dispute",
+      "status": "OPEN",
+      "summary": "Deposit, rent, maintenance, evidence, mediation, decisions, and review timeline.",
+      "capabilities": ["POST /disputes", "GET /disputes/:id", "POST /disputes/:id/evidence"]
+    },
+    {
+      "id": "support",
+      "name": "Support Hub",
+      "route": "/support",
+      "status": "AVAILABLE",
+      "summary": "Knowledge base, tickets, chatbot handoff, callback requests, SLA, and CSAT.",
+      "capabilities": ["GET /support/articles", "POST /support/tickets", "POST /support/callbacks"]
+    },
+    {
+      "id": "experts",
+      "name": "Local Expert",
+      "route": "/experts",
+      "status": "BOOKABLE",
+      "summary": "Expert directory, verification badge, ratings, quotes, bookings, and chat session creation.",
+      "capabilities": ["GET /experts", "POST /experts/:id/book", "GET /experts/:id/availability"]
+    },
+    {
+      "id": "notices",
+      "name": "DG NoticeBoard",
+      "route": "/notices",
+      "status": "LIVE",
+      "summary": "Area notices, broadcasts, attachments, expiry, pinning, and audience targeting.",
+      "capabilities": ["GET /notices", "POST /notices/:id/read"]
+    },
+    {
+      "id": "society",
+      "name": "My Society",
+      "route": "/society",
+      "status": "LIVE",
+      "summary": "Society profile, resident directory, events, polls, announcements, and amenity bookings.",
+      "capabilities": ["GET /societies/:id/events", "POST /societies/:id/amenities/book"]
+    },
+    {
+      "id": "move-in",
+      "name": "Move-in Management",
+      "route": "/tenancies",
+      "status": "SIGNED",
+      "summary": "Inspection, condition photos, inventory, meter readings, and acceptance signatures.",
+      "capabilities": ["GET /move-in/:tenancyId/report", "POST /move-in/:tenancyId/sign"]
+    },
+    {
+      "id": "exit",
+      "name": "Exit Management",
+      "route": "/exit",
+      "status": "PENDING",
+      "summary": "Exit request, notice validation, move-out inspection, final dues, and deposit settlement.",
+      "capabilities": ["POST /exits", "GET /exits/:tenancyId", "POST /exits/:id/inspection"]
+    }
+  ]
+}

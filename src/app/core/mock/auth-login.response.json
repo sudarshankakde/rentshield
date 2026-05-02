@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "message": "Login successful",
+  "token": "rs_jwt_tenant_demo_token",
+  "user": {
+    "id": "usr_tenant_001",
+    "email": "newuser@example.com",
+    "firstName": "Demo",
+    "lastName": "User",
+    "role": "TENANT",
+    "kycStatus": "PENDING",
+    "trustScore": 82
+  }
+}
