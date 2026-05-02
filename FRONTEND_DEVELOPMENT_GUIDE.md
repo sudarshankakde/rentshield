@@ -68,9 +68,9 @@ To ensure systematic and organized development, all features must be implemented
 
 ### Phase 2: Core Rental Lifecycle
 - [x] **4. Property Module**: Property discovery, filtering, expressing interests, and bookmarking.
-- [ ] **5. Tenancies Module**: Track move-in status, lease timelines, and tenancy details.
-- [ ] **6. Agreements Module**: Document generation, review, and e-signatures.
-- [ ] **7. Finance & Payments Module**: Ledgers, payment triggering, and receipts.
+- [x] **5. Tenancies Module**: Track move-in status, lease timelines, and tenancy details.
+- [x] **6. Agreements Module**: Document generation, review, and e-signatures.
+- [x] **7. Finance & Payments Module**: Ledgers, payment triggering, and receipts.
 
 ### Phase 3: Lifecycle Operations
 - [ ] **8. Maintenance Module**: Raising and tracking repair requests.

@@ -1,11 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Search, CheckCircle2, Clock, Filter } from 'lucide-angular';
+import { LucideAngularModule, Search, CheckCircle2, Clock, Filter, Home, ArrowRight } from 'lucide-angular';
 import { RentShieldApiService } from '../../core/api/rentshield-api.service';
-import { ToastService } from '../../core/services/toast.service';
 import { assertObject, readArray, readString } from '../../core/api/request-validation';
-import { createRequestState } from '../../core/services/request-state.service';
+import { injectQuery } from '@tanstack/angular-query-experimental';
+import { firstValueFrom } from 'rxjs';
 
 interface TimelineEvent {
   title: string;
@@ -19,117 +19,145 @@ interface TimelineEvent {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   template: `
-    <div class="space-y-8 max-w-4xl pb-20">
-      <div *ngIf="error()" class="border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-bold text-rose-700">
-        {{ error() }}
+    <div class="space-y-8 max-w-5xl mx-auto pb-20">
+      
+      <!-- Loading State -->
+      <div *ngIf="tenanciesQuery.isLoading()" class="h-64 rounded-[3rem] bg-surface-soft border border-muted animate-pulse flex items-center justify-center">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-12 h-12 rounded-full border-4 border-brand-primary border-t-transparent animate-spin"></div>
+          <p class="text-sm font-bold text-muted-var uppercase tracking-widest">Loading tenancy records...</p>
+        </div>
       </div>
 
-      <div *ngIf="loading()" class="border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold text-slate-600">
-        Loading tenancy timeline...
+      <div *ngIf="tenanciesQuery.error() as error" class="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm font-bold text-rose-700 shadow-sm flex items-center gap-3">
+        <lucide-icon [name]="FilterIcon" size="20"></lucide-icon>
+        {{ error.message || 'Failed to load tenancies timeline.' }}
       </div>
 
-      <div class="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/20">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div *ngIf="!tenanciesQuery.isLoading() && !tenanciesQuery.error()" class="bg-surface/80 backdrop-blur-xl p-8 lg:p-12 rounded-[3rem] border border-border shadow-xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-transparent pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
-            <h2 class="text-4xl font-black text-slate-900 tracking-tight">Lease Timeline</h2>
-            <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2">Contract Life-cycle Monitoring</p>
+            <h2 class="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Lease Timeline</h2>
+            <p class="text-brand font-bold uppercase tracking-widest text-[10px] mt-2 drop-shadow-sm">Contract Life-cycle Monitoring</p>
           </div>
           
-          <div class="flex items-center gap-3">
-             <div class="relative group">
-                <lucide-icon [name]="SearchIcon" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size="16"></lucide-icon>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+             <div class="relative group w-full sm:w-auto">
+                <lucide-icon [name]="SearchIcon" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-soft group-focus-within:text-brand-primary transition-colors" size="18"></lucide-icon>
                 <input 
                   type="text" 
                   [ngModel]="searchQuery()" 
                   (ngModelChange)="searchQuery.set($event)"
                   placeholder="Search events..." 
-                  class="pl-11 pr-6 py-3 bg-slate-50 border border-transparent focus:border-emerald-500 focus:bg-white rounded-2xl w-full md:w-60 font-bold text-slate-900 transition-all outline-none text-sm">
+                  class="pl-12 pr-6 py-3.5 bg-surface-soft border border-border focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 rounded-2xl w-full sm:w-64 font-bold text-text transition-all outline-none text-sm shadow-inner">
              </div>
-             <div class="flex p-1 bg-slate-50 rounded-xl border border-slate-100">
+             
+             <div class="flex p-1.5 bg-surface-muted rounded-2xl border border-border w-full sm:w-auto justify-center">
                 <button 
                   (click)="filterMode.set('all')"
-                  class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
-                  [class.bg-white]="filterMode() === 'all'" [class.text-slate-900]="filterMode() === 'all'" [class.shadow-sm]="filterMode() === 'all'"
-                  [class.text-slate-400]="filterMode() !== 'all'">
+                  class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  [class.bg-surface]="filterMode() === 'all'" [class.text-text]="filterMode() === 'all'" [class.shadow-md]="filterMode() === 'all'"
+                  [class.text-text-muted]="filterMode() !== 'all'">
                   All
                 </button>
                 <button 
                   (click)="filterMode.set('completed')"
-                  class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
-                  [class.bg-white]="filterMode() === 'completed'" [class.text-emerald-600]="filterMode() === 'completed'" [class.shadow-sm]="filterMode() === 'completed'"
-                  [class.text-slate-400]="filterMode() !== 'completed'">
+                  class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  [class.bg-surface]="filterMode() === 'completed'" [class.text-emerald-500]="filterMode() === 'completed'" [class.shadow-md]="filterMode() === 'completed'"
+                  [class.text-text-muted]="filterMode() !== 'completed'">
                   Done
                 </button>
                 <button 
                   (click)="filterMode.set('pending')"
-                  class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
-                  [class.bg-white]="filterMode() === 'pending'" [class.text-amber-600]="filterMode() === 'pending'" [class.shadow-sm]="filterMode() === 'pending'"
-                  [class.text-slate-400]="filterMode() !== 'pending'">
+                  class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  [class.bg-surface]="filterMode() === 'pending'" [class.text-brand-primary]="filterMode() === 'pending'" [class.shadow-md]="filterMode() === 'pending'"
+                  [class.text-text-muted]="filterMode() !== 'pending'">
                   Next
                 </button>
              </div>
           </div>
         </div>
         
-        <div class="relative border-l-4 border-slate-50 ml-4 pl-12 space-y-12 pb-4">
+        <div class="relative border-l-4 border-surface-muted ml-6 pl-10 space-y-12 pb-6 z-10">
           <div *ngFor="let event of filteredEvents(); let last = last" class="relative group">
+            
             <!-- Connector Dot -->
-              <div class="absolute -left-14 top-0 w-10 h-10 rounded-full border-8 border-white shadow-lg flex items-center justify-center text-xs font-black transition-all" 
-                 [ngClass]="event.completed ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'">
-               <lucide-icon *ngIf="event.completed" [name]="CheckIcon" size="14"></lucide-icon>
-               <lucide-icon *ngIf="!event.completed" [name]="ClockIcon" size="14"></lucide-icon>
+            <div class="absolute -left-[3.25rem] top-2 w-12 h-12 rounded-full border-8 border-surface shadow-lg flex items-center justify-center text-xs font-black transition-all z-20" 
+                 [ngClass]="event.completed ? 'bg-emerald-500 text-white' : 'bg-surface-soft border-border text-text-muted group-hover:border-brand-primary group-hover:text-brand-primary'">
+               <lucide-icon *ngIf="event.completed" [name]="CheckIcon" size="16"></lucide-icon>
+               <lucide-icon *ngIf="!event.completed" [name]="ClockIcon" size="16"></lucide-icon>
             </div>
 
             <!-- Content Card -->
-            <div class="p-8 bg-slate-50 border border-slate-100 rounded-4xl transition-all hover:bg-white hover:border-emerald-100 hover:shadow-xl hover:shadow-emerald-100/20 group-hover:-translate-y-1">
-               <div class="flex items-center justify-between mb-3">
-                  <span class="text-[10px] uppercase font-black tracking-[0.2em] px-3 py-1 rounded-full border"
+            <div class="p-8 bg-surface-soft border border-border rounded-3xl transition-all duration-300 hover:bg-surface hover:shadow-xl hover:-translate-y-1"
+                 [ngClass]="event.completed ? 'hover:border-emerald-500/30 hover:shadow-emerald-500/10' : 'hover:border-brand-primary/30 hover:shadow-brand-primary/10'">
+               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                  <span class="text-[10px] uppercase font-black tracking-[0.2em] px-3 py-1.5 rounded-full border shadow-sm w-fit"
                         [ngClass]="{
-                          'bg-emerald-50 text-emerald-600 border-emerald-100': event.completed,
-                          'bg-slate-200/50 text-slate-500 border-slate-200': !event.completed
+                          'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20': event.completed,
+                          'bg-brand-primary/5 text-brand-primary border-brand-primary/20': !event.completed
                         }">
                     {{event.date}}
                   </span>
-                  <span *ngIf="event.completed" class="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
-                     <lucide-icon [name]="CheckIcon" size="10"></lucide-icon> Verified
+                  <span *ngIf="event.completed" class="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 rounded-full">
+                     <lucide-icon [name]="CheckIcon" size="12"></lucide-icon> Verified
+                  </span>
+                  <span *ngIf="!event.completed" class="text-[10px] font-black text-brand-primary uppercase tracking-widest flex items-center gap-1.5 bg-brand-primary/10 px-3 py-1 rounded-full">
+                     <lucide-icon [name]="ArrowIcon" size="12"></lucide-icon> Upcoming
                   </span>
                </div>
-               <h3 class="text-2xl font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors">{{event.title}}</h3>
-               <p class="text-slate-500 text-base mt-2 font-bold leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">{{event.description}}</p>
+               
+               <h3 class="text-2xl font-black text-text tracking-tight transition-colors"
+                   [ngClass]="event.completed ? 'group-hover:text-emerald-500' : 'group-hover:text-brand-primary'">
+                 {{event.title}}
+               </h3>
+               <p class="text-text-muted text-sm mt-3 font-medium leading-relaxed max-w-2xl">{{event.description}}</p>
             </div>
           </div>
 
           <!-- Empty State -->
-          <div *ngIf="filteredEvents().length === 0" class="flex flex-col items-center py-20 text-center">
-             <div class="w-20 h-20 bg-slate-50 rounded-4xl flex items-center justify-center text-slate-200 mb-6">
-                <lucide-icon [name]="SearchIcon" size="40"></lucide-icon>
+          <div *ngIf="filteredEvents().length === 0" class="flex flex-col items-center py-24 text-center">
+             <div class="w-24 h-24 bg-surface-soft rounded-3xl flex items-center justify-center text-text-soft mb-6 shadow-inner border border-border">
+                <lucide-icon [name]="HomeIcon" size="40"></lucide-icon>
              </div>
-             <p class="text-slate-400 font-black uppercase tracking-widest text-xs">No timeline events correlate</p>
+             <h3 class="text-2xl font-black text-text mb-2 tracking-tight">No events found</h3>
+             <p class="text-text-muted font-medium text-sm max-w-sm">There are no timeline events matching your current filters or search.</p>
+             <button *ngIf="searchQuery() || filterMode() !== 'all'" (click)="searchQuery.set(''); filterMode.set('all')" 
+                     class="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-brand-primary hover:text-brand-primary-dark transition-colors bg-brand-primary/10 px-4 py-2 rounded-full">
+               Clear Filters
+             </button>
           </div>
         </div>
       </div>
     </div>
   `
 })
-export class SlassTimelineComponent implements OnInit {
+export class SlassTimelineComponent {
   private readonly api = inject(RentShieldApiService);
-  private readonly toast = inject(ToastService);
-  private readonly state = createRequestState<unknown>(null);
 
   readonly SearchIcon = Search;
   readonly CheckIcon = CheckCircle2;
   readonly ClockIcon = Clock;
   readonly FilterIcon = Filter;
+  readonly HomeIcon = Home;
+  readonly ArrowIcon = ArrowRight;
 
   searchQuery = signal('');
   filterMode = signal<'all' | 'completed' | 'pending'>('all');
 
-  events = signal<TimelineEvent[]>([]);
-  loading = this.state.loading;
-  error = this.state.error;
+  tenanciesQuery = injectQuery(() => ({
+    queryKey: ['tenancies-timeline'],
+    queryFn: async () => {
+      const response = await firstValueFrom(this.api.tenant.tenancies());
+      return this.mapTimelineEvents(response);
+    }
+  }));
 
   filteredEvents = computed(() => {
-    return this.events().filter(e => {
+    const events = this.tenanciesQuery.data() || [];
+    return events.filter(e => {
       const matchesSearch = e.title.toLowerCase().includes(this.searchQuery().toLowerCase()) || 
                             e.description.toLowerCase().includes(this.searchQuery().toLowerCase());
       const matchesFilter = this.filterMode() === 'all' || 
@@ -138,19 +166,6 @@ export class SlassTimelineComponent implements OnInit {
       return matchesSearch && matchesFilter;
     });
   });
-
-  async ngOnInit(): Promise<void> {
-    const response = await this.state.runObservable(this.api.tenant.tenancies(), {
-      errorMessage: 'Failed to load tenancies timeline.',
-    });
-
-    if (!response) {
-      this.toast.error(this.error() ?? 'Failed to load tenancies timeline.');
-      return;
-    }
-
-    this.events.set(this.mapTimelineEvents(response));
-  }
 
   private mapTimelineEvents(payload: unknown): TimelineEvent[] {
     assertObject(payload, 'tenant tenancies response');
@@ -165,13 +180,13 @@ export class SlassTimelineComponent implements OnInit {
       const id = readString(item['id'], 'tenancy');
 
       events.push({
-        title: `Tenancy ${id.slice(0, 8)} started`,
+        title: 'Tenancy ' + id.slice(0, 8) + ' started',
         date: startDate,
-        description: `Lease has started and is currently marked as ${status}.`,
+        description: 'Lease has started and is currently marked as ' + status + '.',
         completed: true,
       });
       events.push({
-        title: `Scheduled tenancy end`,
+        title: 'Scheduled tenancy end',
         date: endDate,
         description: 'Prepare for renewal or exit workflow before this date.',
         completed: false,
