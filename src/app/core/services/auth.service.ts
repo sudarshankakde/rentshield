@@ -5,7 +5,7 @@ import { RentShieldApiService } from '../api/rentshield-api.service';
 import { UiConfigService } from './ui-config.service';
 import { assertObject, readString } from '../api/request-validation';
 
-export type UserRole = 'TENANT' | 'LANDLORD' | 'BROKER' | 'EXPERT' | 'SUPPORT' | 'ADMIN';
+export type UserRole = 'TENANT' | 'LANDLORD' | 'BROKER' | 'EXPERT' | 'SUPPORT' | 'PLATFORM_ADMIN' | 'SOCIETY_ADMIN' | 'SUPPORT_AGENT';
 export type LoginMode = 'PASSWORD' | 'REGISTER';
 export type BackendUserRole =
   | 'TENANT'
@@ -16,6 +16,7 @@ export type BackendUserRole =
   | 'SUPPORT_AGENT';
 
 export interface LoginDetails {
+  id: string;
   name: string;
   email: string;
   role: UserRole;
@@ -49,6 +50,7 @@ export class AuthService {
   private readonly _user = signal<LoginDetails | null>(
     this.restoredSession
       ? {
+          id: this.restoredSession.id,
           name: this.restoredSession.name,
           email: this.restoredSession.email,
           role: this.restoredSession.role,
@@ -74,24 +76,28 @@ export class AuthService {
   private readonly _is2faVerified = signal<boolean>(Boolean(this.restoredSession?.token));
   readonly is2faVerified = this._is2faVerified.asReadonly();
 
-  readonly isAdmin = computed(() => this._role() === 'ADMIN' && this._is2faVerified());
+  readonly isAdmin = computed(() => (this._role() === 'PLATFORM_ADMIN' || this._role() === 'SOCIETY_ADMIN') && this._is2faVerified());
   readonly isLandlord = computed(() => this._role() === 'LANDLORD' && this._is2faVerified());
   readonly isBroker = computed(() => this._role() === 'BROKER' && this._is2faVerified());
-  readonly isExpert = computed(() => this._role() === 'EXPERT' && this._is2faVerified());
-  readonly isSupport = computed(() => this._role() === 'SUPPORT' && this._is2faVerified());
+  readonly isExpert = computed(() => (this._role() === 'EXPERT' || this._role() === 'BROKER') && this._is2faVerified());
+  readonly isSupport = computed(() => (this._role() === 'SUPPORT' || this._role() === 'SUPPORT_AGENT') && this._is2faVerified());
+  readonly isSuperAdmin = computed(() => this._role() === 'PLATFORM_ADMIN');
 
   readonly allowedRoutes = computed(() =>
     routeModules.filter((module) => module.roles.includes(this._role())).map((module) => module.path),
   );
 
   roleLabel(role = this._role()) {
-    const labels: Record<UserRole, string> = {
+    const labels: Record<string, string> = {
       TENANT: 'Tenant',
       LANDLORD: 'Landlord',
-      BROKER: 'Broker',
+      BROKER: 'Service Provider',
       EXPERT: 'Expert',
       SUPPORT: 'Support',
-      ADMIN: 'Admin',
+      PLATFORM_ADMIN: 'Super Admin',
+      SOCIETY_ADMIN: 'Society Admin',
+      SUPPORT_AGENT: 'Support Agent',
+      SERVICE_PROVIDER: 'Service Provider'
     };
     return labels[role] ?? 'User';
   }
@@ -99,6 +105,28 @@ export class AuthService {
   isAuthorized(routePath: string) {
     const path = routePath.replace(/^\//, '');
     return path === '' || this.allowedRoutes().includes(path);
+  }
+
+  hasCapability(key: string): boolean {
+    const caps = this._capabilities();
+    if (!caps) return true; // Fallback to allowed if not loaded yet or legacy
+
+    // Check modules
+    if (Array.isArray(caps.modules) && caps.modules.some((m: string) => m.toLowerCase() === key.toLowerCase())) {
+      return true;
+    }
+
+    // Check features
+    if (Array.isArray(caps.features) && caps.features.some((f: string) => f.toLowerCase() === key.toLowerCase())) {
+      return true;
+    }
+
+    // Legacy "can" check
+    if (caps.can && typeof caps.can === 'object' && caps.can[key] === true) {
+      return true;
+    }
+
+    return false;
   }
 
   async loginWithPassword(email: string, password: string): Promise<{ requiresTwoFactor: boolean }> {
@@ -109,6 +137,7 @@ export class AuthService {
     if (finalToken) {
       this.applySession(
         {
+          id: parsed.id || '',
           name: parsed.name || email.split('@')[0] || 'RentShield User',
           email: parsed.email || email,
           role: this.mapBackendRoleToUiRole(parsed.backendRole),
@@ -117,6 +146,12 @@ export class AuthService {
         },
         null,
       );
+      
+      // Apply capabilities if present
+      if (response && typeof response === 'object' && (response as any).capabilities) {
+        this._capabilities.set((response as any).capabilities);
+      }
+
       this.uiConfig.applyFromAuthPayload(response);
       return { requiresTwoFactor: false };
     }
@@ -156,6 +191,7 @@ export class AuthService {
 
     this.applySession(
       {
+        id: parsed.id || '',
         name: parsed.name || `${details.firstName} ${details.lastName}`.trim(),
         email: parsed.email || details.email,
         role: this.mapBackendRoleToUiRole(parsed.backendRole) || details.role,
@@ -164,6 +200,11 @@ export class AuthService {
       },
       null,
     );
+
+    // Apply capabilities if present
+    if (response && typeof response === 'object' && (response as any).capabilities) {
+      this._capabilities.set((response as any).capabilities);
+    }
 
     this.uiConfig.applyFromAuthPayload(response);
   }
@@ -208,6 +249,7 @@ export class AuthService {
     this.applySession(
       {
         ...current,
+        id: parsed.id || current.id,
         token: accessToken,
         name: parsed.name || current.name,
         email: parsed.email || current.email,
@@ -215,6 +257,11 @@ export class AuthService {
       },
       null,
     );
+
+    // Apply capabilities if present
+    if (response && typeof response === 'object' && (response as any).capabilities) {
+      this._capabilities.set((response as any).capabilities);
+    }
 
     this.uiConfig.applyFromAuthPayload(response);
     return true;
@@ -275,7 +322,7 @@ export class AuthService {
 
   private applySession(user: LoginDetails, preAuthToken: string | null): void {
     this._role.set(user.role);
-    this._user.set(user);
+    this._user.set({ ...user });
     this._token.set(user.token ?? null);
     this._preAuthToken.set(preAuthToken);
     this._isAuthenticated.set(true);
@@ -290,10 +337,11 @@ export class AuthService {
       return;
     }
 
-    const snapshot: SessionSnapshot = {
+    const snapshot: SessionSnapshot & { capabilities?: any } = {
       ...current,
       token: this._token() ?? undefined,
       preAuthToken: this._preAuthToken() ?? undefined,
+      capabilities: this._capabilities() ?? undefined,
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(snapshot));
@@ -306,9 +354,10 @@ export class AuthService {
     }
 
     try {
-      const parsed = JSON.parse(raw) as Partial<SessionSnapshot>;
+      const parsed = JSON.parse(raw) as Partial<SessionSnapshot & { capabilities?: any }>;
 
       const role = this.ensureRole(parsed.role);
+      const id = typeof parsed.id === 'string' ? parsed.id : '';
       const name = typeof parsed.name === 'string' && parsed.name.trim() ? parsed.name : 'RentShield User';
       const email = typeof parsed.email === 'string' && parsed.email.trim() ? parsed.email : 'user@rentshield.local';
 
@@ -317,7 +366,12 @@ export class AuthService {
         return null;
       }
 
+      if (parsed.capabilities) {
+        this._capabilities.set(parsed.capabilities);
+      }
+
       return {
+        id,
         name,
         email,
         role,
@@ -332,8 +386,8 @@ export class AuthService {
   }
 
   private ensureRole(role: unknown): UserRole {
-    const validRoles: UserRole[] = ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'];
-    if (typeof role === 'string' && validRoles.includes(role as UserRole)) {
+    const validRoles: string[] = ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN', 'SUPPORT_AGENT', 'SERVICE_PROVIDER'];
+    if (typeof role === 'string' && validRoles.includes(role)) {
       return role as UserRole;
     }
     return 'TENANT';
@@ -358,6 +412,7 @@ export class AuthService {
     const backendRoleRaw = readString(user?.['role']) || readString(payload['role']);
 
     return {
+      id: readString(user?.['id']) || readString(payload['id']) || undefined,
       token: readString(payload['token']) || undefined,
       accessToken: readString(payload['accessToken']) || undefined,
       preAuthToken: readString(payload['preAuthToken']) || readString(payload['tempToken']) || undefined,
@@ -375,7 +430,7 @@ export class AuthService {
         return 'LANDLORD';
       case 'SUPPORT':
         return 'SUPPORT_AGENT';
-      case 'ADMIN':
+      case 'PLATFORM_ADMIN':
         return 'PLATFORM_ADMIN';
       case 'BROKER':
       case 'EXPERT':
@@ -385,20 +440,8 @@ export class AuthService {
   }
 
   private mapBackendRoleToUiRole(role?: BackendUserRole): UserRole {
-    switch (role) {
-      case 'TENANT':
-        return 'TENANT';
-      case 'LANDLORD':
-        return 'LANDLORD';
-      case 'SUPPORT_AGENT':
-        return 'SUPPORT';
-      case 'PLATFORM_ADMIN':
-      case 'SOCIETY_ADMIN':
-        return 'ADMIN';
-      case 'SERVICE_PROVIDER':
-        return 'BROKER';
-      default:
-        return 'TENANT';
-    }
+    if (!role) return 'TENANT';
+    // We now support backend roles directly in the UI roles
+    return role as UserRole;
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Search, Shield, FileText, User, Hammer, Wallet, MessageSquare, AlertTriangle, HelpCircle, LayoutGrid, Users, Settings, Bell } from 'lucide-angular';
-import { UserRole } from './auth.service';
+import { UserRole, AuthService } from './auth.service';
 import { RentShieldApiService } from '../api/rentshield-api.service';
 import { ToastService } from './toast.service';
 import { UiConfigService } from './ui-config.service';
@@ -23,6 +23,7 @@ export class ModuleService {
   private readonly api = inject(RentShieldApiService);
   private readonly toast = inject(ToastService);
   private readonly uiConfigService = inject(UiConfigService);
+  private readonly authService = inject(AuthService);
   private readonly requestState = createRequestState<unknown>(null);
 
   loading = this.requestState.loading;
@@ -32,22 +33,22 @@ export class ModuleService {
   // Centralized state for turning modules ON/OFF
   // All entries have a live backend API. 'notifications' removed — no backend module.
   modules = signal<AppModule[]>([
-    { id: 'property', name: 'Properties', description: 'Browse and manage listings', icon: Search, color: 'bg-[#00a38d]', isActive: true, path: 'property', roles: ['TENANT', 'LANDLORD', 'BROKER', 'ADMIN'] },
+    { id: 'property', name: 'Properties', description: 'Browse and manage listings', icon: Search, color: 'bg-[#00a38d]', isActive: true, path: 'property', roles: ['TENANT', 'LANDLORD', 'BROKER', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
     { id: 'tenancies', name: 'Tenancies', description: 'Track move-in and lease status', icon: Shield, color: 'bg-[#a355ff]', isActive: true, path: 'tenancies', roles: ['TENANT', 'LANDLORD'] },
-    { id: 'agreements', name: 'Agreements', description: 'Draft, review, and sign contracts', icon: FileText, color: 'bg-[#ff6d00]', isActive: true, path: 'agreements', roles: ['TENANT', 'LANDLORD', 'BROKER', 'ADMIN'] },
-    { id: 'experts', name: 'Experts', description: 'Connect with service specialists', icon: User, color: 'bg-[#4361ee]', isActive: true, path: 'experts', roles: ['BROKER', 'EXPERT', 'TENANT', 'ADMIN'] },
-    { id: 'maintenance', name: 'Maintenance', description: 'Raise and review repair requests', icon: Hammer, color: 'bg-[#3a86ff]', isActive: true, path: 'maintenance', roles: ['TENANT', 'LANDLORD', 'SUPPORT', 'ADMIN'] },
-    { id: 'finance', name: 'Payments', description: 'Manage bills and invoices', icon: Wallet, color: 'bg-[#06d6a0]', isActive: true, path: 'finance', roles: ['TENANT', 'LANDLORD', 'ADMIN'] },
-    { id: 'chat', name: 'Chat', description: 'Collaborate with your support team', icon: MessageSquare, color: 'bg-[#ff006e]', isActive: true, path: 'chat', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'] },
-    { id: 'dispute', name: 'Disputes', description: 'Resolve issues and claims', icon: AlertTriangle, color: 'bg-[#ef4444]', isActive: true, path: 'dispute', roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'ADMIN'] },
-    { id: 'support', name: 'Support', description: 'Help center and live assistance', icon: HelpCircle, color: 'bg-[#6366f1]', isActive: true, path: 'support', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'] },
-    { id: 'notices', name: 'Notices', description: 'Community updates and bulletins', icon: LayoutGrid, color: 'bg-[#f59e0b]', isActive: true, path: 'notices', roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'ADMIN'] },
-    { id: 'notifications', name: 'Notifications', description: 'Alerts and notification preferences', icon: Bell, color: 'bg-[#64748b]', isActive: true, path: 'notifications', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'] },
-    { id: 'kyc', name: 'KYC', description: 'Verify identity and access secure features', icon: Shield, color: 'bg-[#0f766e]', isActive: true, path: 'kyc', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'] },
+    { id: 'agreements', name: 'Agreements', description: 'Draft, review, and sign contracts', icon: FileText, color: 'bg-[#ff6d00]', isActive: true, path: 'agreements', roles: ['TENANT', 'LANDLORD', 'BROKER', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'experts', name: 'Experts', description: 'Connect with service specialists', icon: User, color: 'bg-[#4361ee]', isActive: true, path: 'experts', roles: ['BROKER', 'EXPERT', 'TENANT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'maintenance', name: 'Maintenance', description: 'Raise and review repair requests', icon: Hammer, color: 'bg-[#3a86ff]', isActive: true, path: 'maintenance', roles: ['TENANT', 'LANDLORD', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'finance', name: 'Payments', description: 'Manage bills and invoices', icon: Wallet, color: 'bg-[#06d6a0]', isActive: true, path: 'finance', roles: ['TENANT', 'LANDLORD', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'chat', name: 'Chat', description: 'Collaborate with your support team', icon: MessageSquare, color: 'bg-[#ff006e]', isActive: true, path: 'chat', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'dispute', name: 'Disputes', description: 'Resolve issues and claims', icon: AlertTriangle, color: 'bg-[#ef4444]', isActive: true, path: 'dispute', roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'support', name: 'Support', description: 'Help center and live assistance', icon: HelpCircle, color: 'bg-[#6366f1]', isActive: true, path: 'support', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'notices', name: 'Notices', description: 'Community updates and bulletins', icon: LayoutGrid, color: 'bg-[#f59e0b]', isActive: true, path: 'notices', roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'notifications', name: 'Notifications', description: 'Alerts and notification preferences', icon: Bell, color: 'bg-[#64748b]', isActive: true, path: 'notifications', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'kyc', name: 'KYC', description: 'Verify identity and access secure features', icon: Shield, color: 'bg-[#0f766e]', isActive: true, path: 'kyc', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
     { id: 'exit', name: 'Exit', description: 'Manage move-out workflows', icon: FileText, color: 'bg-[#f97316]', isActive: true, path: 'exit', roles: ['TENANT'] },
-    { id: 'society', name: 'Society', description: 'Society dashboard and contacts', icon: Users, color: 'bg-[#ec4899]', isActive: true, path: 'society', roles: ['ADMIN'] },
-    { id: 'admin', name: 'Admin Panel', description: 'Platform management and configuration', icon: LayoutGrid, color: 'bg-[#111827]', isActive: true, path: 'admin', roles: ['ADMIN'] },
-    { id: 'profile', name: 'Profile', description: 'Account settings and preferences', icon: Settings, color: 'bg-[#64748b]', isActive: true, path: 'profile', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'] },
+    { id: 'society', name: 'Society', description: 'Society dashboard and contacts', icon: Users, color: 'bg-[#ec4899]', isActive: true, path: 'society', roles: ['PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'admin', name: 'Admin Panel', description: 'Platform management and configuration', icon: LayoutGrid, color: 'bg-[#111827]', isActive: true, path: 'admin', roles: ['PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
+    { id: 'profile', name: 'Profile', description: 'Account settings and preferences', icon: Settings, color: 'bg-[#64748b]', isActive: true, path: 'profile', roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'] },
   ]);
 
   /**
@@ -61,9 +62,29 @@ export class ModuleService {
    * Matching uses id, path, and lowercased name for resilience.
    */
   activeModules = computed(() => {
-    // Don't show anything until the backend has confirmed what's active
-    if (!this.uiConfigService.isLoaded()) return [];
+    const isSuperAdmin = this.authService.isSuperAdmin();
+    
+    // Don't show anything until the backend has confirmed what's active (unless super admin)
+    if (!this.uiConfigService.isLoaded() && !isSuperAdmin) return [];
 
+    const caps = this.authService.capabilities();
+    
+    // If Super Admin, show everything that is marked as active in the frontend definitions
+    // OR show everything if the DB is empty.
+    if (isSuperAdmin) {
+      return this.modules().filter(m => m.isActive);
+    }
+    
+    // source of truth: capabilities.modules
+    // if capabilities.modules is present (even if empty), use it
+    if (caps && Array.isArray(caps.modules)) {
+      const allowed = new Set(caps.modules.map((m: string) => m.toLowerCase()));
+      return this.modules()
+        .filter(m => m.isActive)
+        .filter(m => allowed.has(m.id.toLowerCase()) || allowed.has(m.path.toLowerCase()));
+    }
+
+    // fallback: uiConfigService.activeModules (legacy)
     return this.modules()
       .filter(m => m.isActive)
       .filter(m =>
@@ -142,7 +163,7 @@ export class ModuleService {
         color: match?.color ?? 'bg-[#64748b]',
         isActive: readBoolean(item['isActive'], true),
         path: match?.path ?? (slug || `module-${index + 1}`),
-        roles: match?.roles ?? ['ADMIN'],
+        roles: match?.roles ?? ['PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
       };
     });
   }

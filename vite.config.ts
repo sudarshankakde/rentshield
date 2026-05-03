@@ -7,9 +7,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
     resolve: {
-      mainFields: ['module'],
+      mainFields: ['module', 'main', 'jsnext:main', 'browser'],
       alias: {
         '@': path.resolve(__dirname, './src'),
+        'debug': 'debug/src/browser.js',
       },
     },
     plugins: [
@@ -18,6 +19,7 @@ export default defineConfig(({ mode }) => {
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      global: 'globalThis',
     },
     server: {
       port: 3000,

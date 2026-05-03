@@ -3,6 +3,8 @@ import { firstValueFrom } from 'rxjs';
 import { RentShieldApiService } from '../api/rentshield-api.service';
 import { ToastService } from './toast.service';
 import { createRequestState } from './request-state.service';
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 export interface NavItem {
   label: string;
@@ -124,8 +126,17 @@ export class UiConfigService {
 
     const cfg = uiConfig as Record<string, unknown>;
 
-    const nav = Array.isArray(cfg['navigation']) ? cfg['navigation'] : [];
-    const mods = Array.isArray(cfg['activeModules']) ? cfg['activeModules'] : [];
+    const nav = Array.isArray(cfg['navigation']) ? [...cfg['navigation']] : [];
+    const mods = Array.isArray(cfg['activeModules']) ? [...cfg['activeModules']] : [];
+
+    // PLATFORM_ADMIN bypass: ensure Admin Panel is always visible in nav if not present
+    const userRole = (raw['user'] as any)?.role;
+    if (userRole === 'PLATFORM_ADMIN') {
+      const hasAdminNav = nav.some(item => String(item['route']).includes('admin'));
+      if (!hasAdminNav) {
+        nav.push({ label: 'Admin Panel', route: '/admin', icon: 'layout-grid' });
+      }
+    }
 
     this._navigation.set(
       nav
@@ -153,5 +164,13 @@ export class UiConfigService {
 
     // Mark as loaded only after successfully parsing a response
     this._isLoaded.set(true);
+  }
+
+  constructor(private http: HttpClient) {}
+
+  capabilities() {
+    return this.http.get<{ modules: string[]; features: string[] }>(`/auth/capabilities`).pipe(
+      map((response: { modules: string[]; features: string[] }) => response)
+    );
   }
 }

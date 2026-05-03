@@ -103,7 +103,7 @@ export class ChatService {
     }
 
     const message: Partial<ChatMessage> = {
-      senderId: this.auth.user()?.email ?? 'current-user',
+      senderId: this.auth.user()?.id ?? 'current-user',
       senderName: 'You',
       senderAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=You',
       text,
@@ -169,7 +169,7 @@ export class ChatService {
   private mapContacts(payload: unknown): Contact[] {
     assertObject(payload, 'chat sessions response');
     const sessions = readArray(payload['sessions']);
-    const myUserId = this.auth.user()?.email ?? '';
+    const myUserId = this.auth.user()?.id ?? '';
 
     return sessions.map((session, index) => {
       const record = session && typeof session === 'object' ? (session as Record<string, unknown>) : {};
@@ -212,7 +212,7 @@ export class ChatService {
   private mapMessages(payload: unknown): ChatMessage[] {
     assertObject(payload, 'chat messages response');
     const messages = readArray(payload['messages']);
-    const myUserId = this.auth.user()?.email ?? '';
+    const myUserId = this.auth.user()?.id ?? '';
 
     return messages.map((entry, index) => {
       const record = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : {};
@@ -250,7 +250,7 @@ export class ChatService {
     }
 
     const senderName = `${readString(sender['firstName'], 'User')} ${readString(sender['lastName'], '')}`.trim();
-    const myUserId = this.auth.user()?.email ?? '';
+    const myUserId = this.auth.user()?.id ?? '';
 
     return {
       id: readString(record['id'], crypto.randomUUID()),

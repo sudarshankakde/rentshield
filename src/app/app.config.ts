@@ -6,13 +6,18 @@ import { provideAngularQuery, QueryClient } from '@tanstack/angular-query-experi
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
+const queryClient = new QueryClient();
+
+// Expose for DevTools
+(window as any).__TANSTACK_QUERY_CLIENT__ = queryClient;
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimations(),
-    provideAngularQuery(new QueryClient()),
+    provideAngularQuery(queryClient),
     // NgRx and other providers will be added here
   ]
 };

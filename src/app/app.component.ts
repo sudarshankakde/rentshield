@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, LogOut, ShieldCheck, User, Sun, Moon } from 'lucide-angular';
@@ -6,6 +6,7 @@ import { ThemeService } from './core/services/theme.service';
 import { AuthService } from './core/services/auth.service';
 import { UiConfigService } from './core/services/ui-config.service';
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { injectDevtoolsPanel } from '@tanstack/angular-query-devtools-experimental';
 import { createRoutes } from './app.routes';
 
 @Component({
@@ -15,6 +16,7 @@ import { createRoutes } from './app.routes';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
+    CommonModule,
     CommonModule,
     LucideAngularModule,
     ToastComponent,
@@ -104,6 +106,7 @@ import { createRoutes } from './app.routes';
       <main class="max-w-7xl mx-auto p-4 md:p-8">
         <router-outlet></router-outlet>
       </main>
+      <div #devtoolsHost></div>
     </div>
     </ng-template>
   `,
@@ -152,6 +155,8 @@ export class AppComponent implements OnInit {
   readonly SunIcon = Sun;
   readonly MoonIcon = Moon;
 
+  @ViewChild('devtoolsHost', { static: true }) devtoolsHost!: ElementRef;
+
   constructor() {
     effect(() => {
       if (this.auth.isAuthenticated()) {
@@ -163,6 +168,10 @@ export class AppComponent implements OnInit {
         }
       }
     });
+
+    injectDevtoolsPanel(() => ({
+      hostElement: this.devtoolsHost,
+    }));
   }
 
   async ngOnInit() {

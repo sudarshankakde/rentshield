@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiClientService, QueryParams } from './api-client.service';
 import { assertEmail, assertMinLength, assertNumberInRange, assertRequiredString } from './request-validation';
+import { HttpClient } from '@angular/common/http';
 
 export interface RegisterRequest {
   email: string;
@@ -37,6 +38,7 @@ export interface PropertyFilters extends QueryParams {
 @Injectable({ providedIn: 'root' })
 export class RentShieldApiService {
   private readonly api = inject(ApiClientService);
+  private httpClient = inject(HttpClient);
 
   /**
    * Wraps a raw-array or raw-object response into { [key]: data }.
@@ -128,6 +130,10 @@ export class RentShieldApiService {
       assertRequiredString(id, 'id');
       return this.api.delete(`/admin/features/${id}`);
     },
+    updateFeature: (id: string, payload: { name?: string; description?: string }): Observable<unknown> => {
+      assertRequiredString(id, 'id');
+      return this.api.patch(`/admin/features/${id}`, payload);
+    },
     listUsers: (query?: QueryParams): Observable<unknown> => this.api.get('/admin/users', { query }),
     listRoleFeatures: (role: string): Observable<unknown> => {
       assertRequiredString(role, 'role');
@@ -152,6 +158,14 @@ export class RentShieldApiService {
       assertRequiredString(id, 'id');
       return this.api.patch(`/admin/users/${id}/status`, { isActive });
     },
+    updateUser: (id: string, payload: Record<string, unknown>): Observable<unknown> => {
+      assertRequiredString(id, 'id');
+      return this.api.patch(`/admin/users/${id}`, payload);
+    },
+    deleteUser: (id: string): Observable<unknown> => {
+      assertRequiredString(id, 'id');
+      return this.api.delete(`/admin/users/${id}`);
+    },
     listKyc: (status?: string): Observable<unknown> => this.api.get('/admin/kyc', { query: { status } }),
     reviewKyc: (id: string, status: string, notes?: string): Observable<unknown> => {
       assertRequiredString(id, 'id');
@@ -163,7 +177,17 @@ export class RentShieldApiService {
       assertRequiredString(id, 'id');
       return this.api.patch(`/admin/properties/${id}/toggle-publish`, { isActive });
     },
+    updateProperty: (id: string, payload: Record<string, unknown>): Observable<unknown> => {
+      assertRequiredString(id, 'id');
+      return this.api.patch(`/admin/properties/${id}`, payload);
+    },
+    deleteProperty: (id: string): Observable<unknown> => {
+      assertRequiredString(id, 'id');
+      return this.api.delete(`/admin/properties/${id}`);
+    },
     stats: (): Observable<unknown> => this.api.get('/admin/stats'),
+    getRoleMatrix: (): Observable<unknown> => this.api.get('/admin/roles/matrix'),
+    seedModules: (): Observable<unknown> => this.api.post('/admin/modules/seed', {}),
   };
 
   readonly agreements = {
@@ -573,15 +597,22 @@ export class RentShieldApiService {
   // ─── Profile (GET/PATCH /api/profile) ─────────────────────────────────────
   readonly profile = {
     get: (): Observable<unknown> => this.api.get('/profile'),
-    update: (payload: { firstName?: string; lastName?: string }): Observable<unknown> =>
+    update: (payload: { 
+      firstName?: string; 
+      lastName?: string;
+      avatar?: string;
+      phoneNumber?: string;
+      address?: string;
+      dateOfBirth?: string;
+    }): Observable<unknown> =>
       this.api.patch('/profile', payload),
     changePassword: (payload: { currentPassword: string; newPassword: string }): Observable<unknown> => {
       assertRequiredString(payload.currentPassword, 'currentPassword');
       assertMinLength(payload.newPassword, 'newPassword', 6);
       return this.api.post('/profile/change-password', payload);
     },
-    toggle2fa: (enabled: boolean): Observable<unknown> =>
-      this.api.patch('/profile/2fa', { enabled }),
+    toggle2fa: (enabled: boolean): Observable<{ is2faEnabled: boolean; message: string }> =>
+      this.api.patch<{ is2faEnabled: boolean; message: string }>('/profile/2fa', { enabled }),
   };
 
   // ─── Notifications (GET/PATCH/DELETE /api/notifications) ─────────────────
@@ -604,5 +635,9 @@ export class RentShieldApiService {
       return this.api.delete(`/notifications/${id}`);
     },
   };
+
+  patch<T>(url: string, body: any): Observable<T> {
+    return this.httpClient.patch<T>(url, body);
+  }
 }
 

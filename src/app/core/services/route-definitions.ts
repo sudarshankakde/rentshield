@@ -23,7 +23,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Browse and manage listings',
     icon: Search,
     color: 'bg-[#00a38d]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/property/property-list/property-list.component').then(m => m.PropertyListComponent)
   },
   {
@@ -41,7 +41,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Draft, review, and sign contracts',
     icon: FileText,
     color: 'bg-[#ff6d00]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/agreements/agreement-list.component').then(m => m.AgreementListComponent)
   },
   {
@@ -50,7 +50,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Connect with service specialists',
     icon: User,
     color: 'bg-[#4361ee]',
-    roles: ['BROKER', 'EXPERT', 'TENANT', 'ADMIN'],
+    roles: ['BROKER', 'EXPERT', 'TENANT', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/experts/expert-list.component').then(m => m.ExpertListComponent)
   },
   {
@@ -59,7 +59,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Raise and review repair requests',
     icon: Hammer,
     color: 'bg-[#3a86ff]',
-    roles: ['TENANT', 'LANDLORD', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'SUPPORT', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/maintenance/maintenance-list.component').then(m => m.MaintenanceListComponent)
   },
   {
@@ -68,7 +68,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Manage bills and invoices',
     icon: Wallet,
     color: 'bg-[#06d6a0]',
-    roles: ['TENANT', 'LANDLORD', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/finance/ledger/ledger.component').then(m => m.LedgerComponent)
   },
   {
@@ -77,7 +77,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Collaborate with your support team',
     icon: MessageSquare,
     color: 'bg-[#ff006e]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/chat/chat.component').then(m => m.ChatComponent)
   },
   {
@@ -86,7 +86,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Resolve issues and claims',
     icon: AlertTriangle,
     color: 'bg-[#ef4444]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/disputes/dispute-list.component').then(m => m.DisputeListComponent)
   },
   {
@@ -95,7 +95,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Help center and live assistance',
     icon: HelpCircle,
     color: 'bg-[#6366f1]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/support/support-hub.component').then(m => m.SupportHubComponent)
   },
   {
@@ -104,7 +104,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Community updates and bulletins',
     icon: LayoutGrid,
     color: 'bg-[#f59e0b]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/notices/notice-board.component').then(m => m.NoticeBoardComponent)
   },
   {
@@ -113,8 +113,17 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Alerts and notification preferences',
     icon: Bell,
     color: 'bg-[#64748b]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/notifications/notification-settings.component').then(m => m.NotificationSettingsComponent)
+  },
+  {
+    path: 'documents',
+    name: 'Documents',
+    description: 'Store and manage property documents',
+    icon: FileText,
+    color: 'bg-[#00a38d]',
+    roles: ['TENANT', 'LANDLORD', 'PLATFORM_ADMIN'],
+    loadComponent: () => import('../../features/documents/document-vault.component').then(m => m.DocumentVaultComponent)
   },
 
   {
@@ -123,7 +132,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Verify identity and access secure features',
     icon: Shield,
     color: 'bg-[#0f766e]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/kyc/kyc-workflow.component').then(m => m.KycWorkflowComponent)
   },
   {
@@ -141,7 +150,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Society dashboard and contacts',
     icon: Users,
     color: 'bg-[#ec4899]',
-    roles: ['ADMIN'],
+    roles: ['PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/society/society-dashboard.component').then(m => m.SocietyDashboardComponent)
   },
   {
@@ -150,7 +159,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Platform management and configuration',
     icon: LayoutGrid,
     color: 'bg-[#111827]',
-    roles: ['ADMIN'],
+    roles: ['PLATFORM_ADMIN'],
     loadComponent: () => import('../../features/admin/admin-dashboard.component').then(m => m.AdminDashboardComponent)
   },
   {
@@ -159,7 +168,7 @@ export const routeModules: RouteModuleDefinition[] = [
     description: 'Update your account details and settings',
     icon: User,
     color: 'bg-[#64748b]',
-    roles: ['TENANT', 'LANDLORD', 'BROKER', 'EXPERT', 'SUPPORT', 'ADMIN'],
+    roles: ['TENANT', 'LANDLORD', 'BROKER', 'PLATFORM_ADMIN', 'SOCIETY_ADMIN'],
     loadComponent: () => import('../../features/profile/user-profile.component').then(m => m.UserProfileComponent)
   }
 ];

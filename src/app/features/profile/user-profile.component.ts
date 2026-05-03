@@ -1,12 +1,12 @@
-import { Component, signal, inject, effect } from '@angular/core';
+import { Component, signal, inject, ElementRef, ViewChild, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, User, Camera, Mail, Phone, MapPin, Shield, Key, Lock, Check } from 'lucide-angular';
+import { LucideAngularModule, User, Camera, Mail, Phone, MapPin, Shield, Key, Lock, Check, Calendar } from 'lucide-angular';
 import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/services/auth.service';
 import { RentShieldApiService } from '../../core/api/rentshield-api.service';
 import { injectQuery, injectMutation, QueryClient } from '@tanstack/angular-query-experimental';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
 @Component({
   selector: 'app-user-profile',
@@ -16,11 +16,11 @@ import { firstValueFrom } from 'rxjs';
     <div class="space-y-10 max-w-5xl mx-auto pb-20">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Identity & Profile</h2>
+          <h2 class="text-4xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-r from-slate-900 to-slate-500 dark:from-white dark:to-slate-400">Identity & Profile</h2>
           <p class="text-brand font-bold uppercase tracking-widest text-[10px] mt-2 drop-shadow-sm">Manage your verified credentials</p>
         </div>
         <button (click)="toggleEdit()" 
-                class="relative overflow-hidden group bg-gradient-to-r from-brand-primary to-brand-primary-dark text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 hover:shadow-brand/30">
+                class="relative overflow-hidden group bg-linear-to-r from-brand-primary to-brand-primary-dark text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:-translate-y-1 hover:shadow-brand/30">
           <span class="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-500 -skew-x-12 -translate-x-full"></span>
           <span class="relative z-10">{{ isEditing() ? 'Cancel Edit' : 'Edit Profile' }}</span>
         </button>
@@ -38,24 +38,29 @@ import { firstValueFrom } from 'rxjs';
         <!-- Sidebar: Profile Image & Security Stats -->
         <div class="space-y-6">
            <div class="bg-surface/80 backdrop-blur-xl p-8 rounded-[2.5rem] border border-border shadow-xl relative overflow-hidden group">
-              <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-secondary to-brand-primary"></div>
-              <div class="absolute inset-0 bg-gradient-to-b from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-brand-secondary to-brand-primary"></div>
+              <div class="absolute inset-0 bg-linear-to-b from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div class="relative inline-block mb-6 mt-4">
                  <div class="w-32 h-32 rounded-full bg-surface-soft flex items-center justify-center border-4 border-surface shadow-2xl overflow-hidden relative z-10">
-                    <img *ngIf="userProfile?.avatar" [src]="userProfile.avatar" class="w-full h-full object-cover">
-                    <lucide-icon *ngIf="!userProfile?.avatar" [name]="UserIcon" size="48" class="text-text-soft"></lucide-icon>
+                    <img *ngIf="userProfile?.avatar || editForm.avatar" [src]="editForm.avatar || userProfile?.avatar" class="w-full h-full object-cover">
+                    <lucide-icon *ngIf="!userProfile?.avatar && !editForm.avatar" [name]="UserIcon" size="48" class="text-text-soft"></lucide-icon>
                  </div>
-                 <button *ngIf="isEditing()" class="absolute -bottom-2 -right-2 z-20 w-12 h-12 bg-brand-primary text-white rounded-full shadow-lg flex items-center justify-center border-4 border-surface hover:scale-110 transition-transform">
+                 <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" class="hidden">
+                 <button *ngIf="isEditing()" (click)="fileInput.click()" class="absolute -bottom-2 -right-2 z-20 w-12 h-12 bg-brand-primary text-white rounded-full shadow-lg flex items-center justify-center border-4 border-surface hover:scale-110 transition-transform">
                     <lucide-icon [name]="CameraIcon" size="18"></lucide-icon>
                  </button>
               </div>
 
               <h3 class="text-2xl font-black tracking-tight text-text relative z-10">{{ userProfile?.firstName }} {{ userProfile?.lastName }}</h3>
-              <p class="text-brand-primary font-black text-[10px] uppercase tracking-widest mt-1 relative z-10">{{ auth.roleLabel() }}</p>
+              <div class="flex items-center gap-2 mt-1 relative z-10">
+                <p class="text-brand-primary font-black text-[10px] uppercase tracking-widest">{{ auth.roleLabel() }}</p>
+                <span *ngIf="userProfile?.subscription" class="w-1 h-1 rounded-full bg-border"></span>
+                <p *ngIf="userProfile?.subscription" class="text-text-muted font-bold text-[10px] uppercase tracking-widest">{{ userProfile.subscription.name }} PLAN</p>
+              </div>
            </div>
 
-           <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden border border-slate-700">
+           <div class="bg-linear-to-br from-slate-900 to-slate-800 p-8 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden border border-slate-700">
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.15),transparent_50%)]"></div>
               
               <div class="relative z-10">
@@ -77,15 +82,13 @@ import { firstValueFrom } from 'rxjs';
                    <div class="flex items-center justify-between pt-4 border-t border-white/5">
                       <div class="flex flex-col">
                         <span class="text-xs font-bold text-slate-400">Two-Factor Auth</span>
-                        <span class="text-[10px] text-slate-500 mt-1 max-w-[120px] leading-tight">Add an extra layer of security</span>
+                        <span class="text-[10px] text-slate-500 mt-1 max-w-30 leading-tight">Add an extra layer of security</span>
                       </div>
-                      <button (click)="toggle2faMutation.mutate(!userProfile?.twoFactorEnabled)" 
-                              [disabled]="toggle2faMutation.isPending()"
-                              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-                              [ngClass]="userProfile?.twoFactorEnabled ? 'bg-emerald-500' : 'bg-slate-600'">
-                        <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                              [ngClass]="userProfile?.twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'"></span>
-                      </button>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" [checked]="userProfile?.is2faEnabled" (change)="toggle2fa($event.target.checked)">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-primary rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-brand-primary"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">{{ userProfile?.is2faEnabled ? 'Enabled' : 'Disabled' }}</span>
+                      </label>
                    </div>
                 </div>
               </div>
@@ -120,6 +123,27 @@ import { firstValueFrom } from 'rxjs';
                       <lucide-icon [name]="MailIcon" size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-soft"></lucide-icon>
                       <input [value]="userProfile?.email" disabled
                             class="w-full bg-surface-muted border border-border rounded-2xl p-4 pl-12 font-bold text-text-muted transition-all outline-none opacity-70 cursor-not-allowed">
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Phone Number</label>
+                  <input [(ngModel)]="editForm.phoneNumber" [disabled]="!isEditing()"
+                          class="w-full bg-surface-soft border border-border focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 rounded-2xl p-4 font-bold text-text transition-all outline-none disabled:opacity-60 disabled:bg-surface-muted">
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Address</label>
+                  <input [(ngModel)]="editForm.address" [disabled]="!isEditing()"
+                          class="w-full bg-surface-soft border border-border focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 rounded-2xl p-4 font-bold text-text transition-all outline-none disabled:opacity-60 disabled:bg-surface-muted">
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Date of Birth</label>
+                  <div class="relative">
+                    <lucide-icon [name]="CalendarIcon" size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-text-soft"></lucide-icon>
+                    <input [(ngModel)]="editForm.dateOfBirth" type="date" [disabled]="!isEditing()"
+                            class="w-full bg-surface-soft border border-border focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 rounded-2xl p-4 pl-12 font-bold text-text transition-all outline-none disabled:opacity-60 disabled:bg-surface-muted">
                   </div>
                 </div>
             </div>
@@ -189,12 +213,17 @@ export class UserProfileComponent {
   readonly KeyIcon = Key;
   readonly LockIcon = Lock;
   readonly CheckIcon = Check;
+  readonly CalendarIcon = Calendar;
 
   isEditing = signal(false);
 
   editForm = {
     firstName: '',
     lastName: '',
+    avatar: '',
+    phoneNumber: '',
+    address: '',
+    dateOfBirth: ''
   };
 
   passwordForm = {
@@ -204,40 +233,50 @@ export class UserProfileComponent {
 
   profileQuery = injectQuery(() => ({
     queryKey: ['profile'],
-    queryFn: () => firstValueFrom(this.api.profile.get()) as Promise<any>,
+    queryFn: () => firstValueFrom(this.api.profile.get().pipe(
+      map((res: any) => res.profile)
+    )),
   }));
 
   constructor() {
+    // Reactively sync form with data
     effect(() => {
       const data = this.profileQuery.data();
       if (data && !this.isEditing()) {
-        this.editForm.firstName = data.firstName || '';
-        this.editForm.lastName = data.lastName || '';
+        this.syncForm(data);
       }
     });
+  }
+
+  private syncForm(data: any) {
+    this.editForm = {
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      avatar: data.avatar || '',
+      phoneNumber: data.phoneNumber || '',
+      address: data.address || '',
+      dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth).toISOString().split('T')[0] : ''
+    };
   }
 
   toggleEdit() {
     this.isEditing.set(!this.isEditing());
     if (!this.isEditing()) {
-      // Reset form if cancelled
       const data = this.profileQuery.data();
-      if (data) {
-        this.editForm.firstName = data.firstName || '';
-        this.editForm.lastName = data.lastName || '';
-      }
+      if (data) this.syncForm(data);
     }
   }
 
   updateProfileMutation = injectMutation(() => ({
-    mutationFn: (payload: { firstName: string; lastName: string }) => firstValueFrom(this.api.profile.update(payload)),
+    mutationFn: (payload: any) => firstValueFrom(this.api.profile.update(payload)),
     onSuccess: () => {
       this.toastService.success('Profile updated successfully');
       this.isEditing.set(false);
       this.queryClient.invalidateQueries({ queryKey: ['profile'] });
       
-      // Sync auth state if needed
-      this.auth.updateUser({ name: this.editForm.firstName + ' ' + this.editForm.lastName });
+      this.auth.updateUser({ 
+        name: `${this.editForm.firstName} ${this.editForm.lastName}`.trim() 
+      });
     },
     onError: (err: any) => {
       this.toastService.error(err?.message || 'Failed to update profile');
@@ -245,10 +284,21 @@ export class UserProfileComponent {
   }));
 
   saveProfile() {
-    this.updateProfileMutation.mutate({
-      firstName: this.editForm.firstName,
-      lastName: this.editForm.lastName
-    });
+    console.log('Saving Profile with payload:', this.editForm);
+    this.updateProfileMutation.mutate(this.editForm);
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Mock upload: In a real app, send to server
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.editForm.avatar = e.target.result;
+        this.toastService.show('Avatar preview updated. Save profile to confirm.', 'info');
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   changePasswordMutation = injectMutation(() => ({
@@ -270,15 +320,18 @@ export class UserProfileComponent {
     this.changePasswordMutation.mutate(this.passwordForm);
   }
 
-  toggle2faMutation = injectMutation(() => ({
-    mutationFn: (enabled: boolean) => firstValueFrom(this.api.profile.toggle2fa(enabled)),
-    onSuccess: () => {
-      this.toastService.success('2FA settings updated');
-      this.queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-    onError: (err: any) => {
-      this.toastService.error(err?.message || 'Failed to update 2FA settings');
-    }
-  }));
+  toggle2fa(enabled: boolean) {
+    this.api.profile.toggle2fa(enabled).subscribe({
+      next: (response: { is2faEnabled: boolean; message: string }) => {
+        this.toastService.success(response.message);
+        this.queryClient.invalidateQueries({ queryKey: ['profile'] });
+      },
+      error: (err: any) => {
+        this.toastService.error(err.error?.message || 'Failed to update 2FA status');
+      },
+    });
+  }
+
+  ngOnInit() {}
 }
 
