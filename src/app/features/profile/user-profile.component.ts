@@ -1,4 +1,4 @@
-import { Component, signal, inject, ElementRef, ViewChild, effect, computed } from '@angular/core';
+import { Component, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, User, Camera, Mail, Phone, MapPin, Shield, Key, Lock, Check, Calendar } from 'lucide-angular';

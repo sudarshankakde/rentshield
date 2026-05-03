@@ -133,7 +133,7 @@ export class RegisterComponent {
     { value: 'BROKER', label: 'Broker' },
     { value: 'EXPERT', label: 'Expert' },
     { value: 'SUPPORT', label: 'Support' },
-    { value: 'ADMIN', label: 'Admin' },
+    { value: 'PLATFORM_ADMIN', label: 'Admin' },
   ];
 
   readonly form = this.fb.nonNullable.group(

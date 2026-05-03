@@ -73,19 +73,19 @@ To ensure systematic and organized development, all features must be implemented
 - [x] **7. Finance & Payments Module**: Ledgers, payment triggering, and receipts.
 
 ### Phase 3: Lifecycle Operations
-- [ ] **8. Maintenance Module**: Raising and tracking repair requests.
-- [ ] **9. Chat Module**: Real-time communication for maintenance and support.
-- [ ] **10. Disputes Module**: Raising and resolving claims or conflicts.
-- [ ] **11. Exit Module**: Move-out requests, inspections, and settlements.
+- [x] **8. Maintenance Module**: Raising and tracking repair requests.
+- [x] **9. Chat Module**: Real-time communication for maintenance and support.
+- [x] **10. Disputes Module**: Raising and resolving claims or conflicts.
+- [x] **11. Exit Module**: Move-out requests, inspections, and settlements.
 
 ### Phase 4: Community & Extended Services
-- [ ] **12. Notifications & Notices**: Real-time alerts, notice boards, and community updates.
-- [ ] **13. Experts Module**: Discovering and booking service specialists (cleaning, movers, etc.).
-- [ ] **14. Society Module**: Building management, amenity bookings, and resident directory.
+- [x] **12. Notifications & Notices**: Real-time alerts, notice boards, and community updates.
+- [x] **13. Experts Module**: Discovering and booking service specialists (cleaning, movers, etc.).
+- [x] **14. Society Module**: Building management, amenity bookings, and resident directory.
 
 ### Phase 5: Administration & Support
-- [ ] **15. Support Hub**: Knowledge base, ticketing system, and CSAT.
-- [ ] **16. Admin Panel**: Global user management, module toggling, KYC reviews, and platform statistics.
+- [x] **15. Support Hub**: Knowledge base, ticketing system, and CSAT.
+- [x] **16. Admin Panel**: Global user management, module toggling, KYC reviews, and platform statistics.
 
 ---
 **Development Instruction**: For each feature above, ensure it adheres to the Glassmorphism premium design, uses TanStack Query, and matches the backend DTOs.

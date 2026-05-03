@@ -159,6 +159,7 @@ export class AuthService {
     if (parsed.preAuthToken) {
       this.applySession(
         {
+          id: parsed.id || '',
           name: parsed.name || email.split('@')[0] || 'RentShield User',
           email: parsed.email || email,
           role: this.mapBackendRoleToUiRole(parsed.backendRole),
@@ -400,6 +401,7 @@ export class AuthService {
     name?: string;
     email?: string;
     backendRole?: BackendUserRole;
+    id?: string;
   } {
     assertObject(payload, 'auth response');
     const rawUser = payload['user'];

@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Settings, ShieldAlert, Cpu, Activity, Database, Zap, ShieldCheck, LayoutDashboard, Terminal, RefreshCw, BarChart3, Radio, Users, Shield, FileText, CheckCircle, XCircle, Search, Edit2, Trash2, Plus, ArrowRight } from 'lucide-angular';
-import { injectQuery, injectMutation, injectQueryClient } from '@tanstack/angular-query-experimental';
-import { AuthService, UserRole } from '../../core/services/auth.service';
+import { LucideAngularModule, ShieldAlert, Cpu, Activity, Database, LayoutDashboard, RefreshCw, Users, FileText, CheckCircle, XCircle, Search, Edit2, Trash2, Plus } from 'lucide-angular';
+import { injectQuery, injectMutation } from '@tanstack/angular-query-experimental';
+import { AuthService } from '../../core/services/auth.service';
 import { AdminDataService } from './admin.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -463,7 +463,6 @@ export class AdminDashboardComponent implements OnInit {
   auth = inject(AuthService);
   adminService = inject(AdminDataService);
   toast = inject(ToastService);
-  private queryClient = injectQueryClient();
 
   // Icons
   CpuIcon = Cpu; ShieldAlertIcon = ShieldAlert; UsersIcon = Users;
@@ -550,7 +549,7 @@ export class AdminDashboardComponent implements OnInit {
         this.matrixQuery.refetch();
         this.statsQuery.refetch();
         this.auth.loadCapabilities();
-      }).catch(e => this.toast.error('Seeding failed'));
+      }).catch(() => this.toast.error('Seeding failed'));
     }
   }
 
@@ -570,7 +569,7 @@ export class AdminDashboardComponent implements OnInit {
     req.then(() => {
       this.matrixQuery.refetch();
       this.toast.success('Permission updated');
-    }).catch(e => {
+    }).catch(() => {
       this.toast.error('Failed to update permission');
     });
   }
@@ -580,14 +579,14 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.updateUserRole(userId, newRole).then(() => {
       this.usersQuery.refetch();
       this.toast.success('Role updated');
-    }).catch(e => this.toast.error('Update failed'));
+    }).catch(() => this.toast.error('Update failed'));
   }
 
   toggleUserStatus(user: any) {
     this.adminService.updateUserStatus(user.id, !user.isActive).then(() => {
       this.usersQuery.refetch();
       this.toast.success(`User ${user.isActive ? 'suspended' : 'activated'}`);
-    }).catch(e => this.toast.error('Update failed'));
+    }).catch(() => this.toast.error('Update failed'));
   }
 
   deleteUser(id: string) {
@@ -596,7 +595,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success('User deleted');
         this.usersQuery.refetch();
         this.statsQuery.refetch();
-      }).catch(e => this.toast.error('Delete failed'));
+      }).catch(() => this.toast.error('Delete failed'));
     }
   }
 
@@ -606,7 +605,7 @@ export class AdminDashboardComponent implements OnInit {
       this.kycQuery.refetch();
       this.statsQuery.refetch();
       this.toast.success(`KYC ${status}`);
-    }).catch(e => this.toast.error('Review failed'));
+    }).catch(() => this.toast.error('Review failed'));
   }
 
   // Property helpers
@@ -614,7 +613,7 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.togglePropertyPublish(property.id, !property.isPublished).then(() => {
       this.propertiesQuery.refetch();
       this.toast.success(`Property ${property.isPublished ? 'unpublished' : 'published'}`);
-    }).catch(e => this.toast.error('Update failed'));
+    }).catch(() => this.toast.error('Update failed'));
   }
 
   deleteProperty(id: string) {
@@ -623,7 +622,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success('Property deleted');
         this.propertiesQuery.refetch();
         this.statsQuery.refetch();
-      }).catch(e => this.toast.error('Delete failed'));
+      }).catch(() => this.toast.error('Delete failed'));
     }
   }
 
@@ -643,7 +642,7 @@ export class AdminDashboardComponent implements OnInit {
       this.matrixQuery.refetch();
       this.createModuleMode = false;
       this.newModule = { name: '', label: '' };
-    }).catch(e => this.toast.error('Failed to create module'));
+    }).catch(() => this.toast.error('Failed to create module'));
   }
 
   deleteModule(id: string) {
@@ -652,7 +651,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success('Module deleted');
         this.modulesQuery.refetch();
         this.matrixQuery.refetch();
-      }).catch(e => this.toast.error('Failed to delete module'));
+      }).catch(() => this.toast.error('Failed to delete module'));
     }
   }
 
@@ -664,7 +663,7 @@ export class AdminDashboardComponent implements OnInit {
       this.matrixQuery.refetch();
       this.createFeatureMode = null;
       this.newFeature = { name: '', description: '' };
-    }).catch(e => this.toast.error('Failed to add feature'));
+    }).catch(() => this.toast.error('Failed to add feature'));
   }
 
   deleteFeature(id: string) {
@@ -673,7 +672,7 @@ export class AdminDashboardComponent implements OnInit {
         this.toast.success('Feature deleted');
         this.modulesQuery.refetch();
         this.matrixQuery.refetch();
-      }).catch(e => this.toast.error('Failed to delete feature'));
+      }).catch(() => this.toast.error('Failed to delete feature'));
     }
   }
 
@@ -692,7 +691,7 @@ export class AdminDashboardComponent implements OnInit {
       this.editingModuleId = null;
       this.modulesQuery.refetch();
       this.matrixQuery.refetch();
-    }).catch(e => this.toast.error('Update failed'));
+    }).catch(() => this.toast.error('Update failed'));
   }
 
   // Edit Feature Logic
@@ -710,6 +709,6 @@ export class AdminDashboardComponent implements OnInit {
       this.editingFeatureId = null;
       this.modulesQuery.refetch();
       this.matrixQuery.refetch();
-    }).catch(e => this.toast.error('Update failed'));
+    }).catch(() => this.toast.error('Update failed'));
   }
 }
