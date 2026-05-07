@@ -64,7 +64,7 @@ export interface Phase1ModuleResponse {
 
 @Injectable({ providedIn: 'root' })
 export class MockApiService {
-  readonly baseUrl = 'http://localhost:4000/api';
+  readonly baseUrl = 'http://ec2-3-110-169-227.ap-south-1.compute.amazonaws.com/api';
 
   login() {
     return loginResponse;

@@ -99,10 +99,13 @@ export class LoginComponent {
 
       this.toast.success('Signed in successfully.');
       await this.router.navigateByUrl('/');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to sign in.';
-      this.toast.error(message);
-    } finally {
+     } catch (error) {
+  console.error(error);
+
+  this.toast.error(
+    'Unable to sign in right now. Please try again later.'
+  );
+}finally {
       this.busy.set(false);
     }
   }

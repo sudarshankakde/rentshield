@@ -180,9 +180,12 @@ export class RegisterComponent {
       this.toast.success('Account created successfully.');
       await this.router.navigateByUrl('/');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to register.';
-      this.toast.error(message);
-    } finally {
+  console.error(error);
+
+  this.toast.error(
+    'Unable to create account right now. Please try again later.'
+  );
+} finally {
       this.busy.set(false);
     }
   }

@@ -74,7 +74,7 @@ export class ApiClientService {
   private resolveBaseUrl(): string {
     const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
     const configured = env['VITE_API_BASE_URL']?.trim();
-    const fallback = 'http://localhost:4000/api';
+    const fallback = 'http://ec2-3-110-169-227.ap-south-1.compute.amazonaws.com/api';
     const base = configured && configured.length > 0 ? configured : fallback;
     return base.endsWith('/') ? base.slice(0, -1) : base;
   }
