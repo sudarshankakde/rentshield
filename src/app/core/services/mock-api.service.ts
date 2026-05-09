@@ -64,7 +64,7 @@ export interface Phase1ModuleResponse {
 
 @Injectable({ providedIn: 'root' })
 export class MockApiService {
-  readonly baseUrl = 'http://ec2-3-110-169-227.ap-south-1.compute.amazonaws.com/api';
+  readonly baseUrl = 'import.meta.env.VITE_API_BASE_URL';
 
   login() {
     return loginResponse;

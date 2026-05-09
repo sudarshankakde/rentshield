@@ -158,11 +158,11 @@ export class ChatService {
 
   private resolveApiOrigin(): string {
     const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
-    const configured = env['VITE_API_BASE_URL'] ?? 'http://ec2-3-110-169-227.ap-south-1.compute.amazonaws.com/api';
+    const configured = env['VITE_API_BASE_URL'] ?? 'import.meta.env.VITE_API_BASE_URL';
     try {
       return new URL(configured).origin;
     } catch {
-      return 'http://ec2-3-110-169-227.ap-south-1.compute.amazonaws.com/api';
+      return 'import.meta.env.VITE_API_BASE_URL';
     }
   }
 
