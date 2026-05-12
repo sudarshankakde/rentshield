@@ -11,8 +11,8 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, RouterLink],
   template: `
-    <div class="max-w-6xl mx-auto space-y-8 pb-12">
-      <section class="relative overflow-hidden rounded-2xl bg-surface border border-muted p-8 shadow-md">
+    <div class="max-w-7xl mx-auto space-y-6 pb-10 px-4">
+      <section class="relative overflow-hidden rounded-2xl bg-surface border border-muted p-6 md:p-8 shadow-lg backdrop-blur-md">
         <!-- Hero Background -->
         <div class="absolute inset-0 z-0">
           <img src="/assets/dashboard_hero.png" alt="Dashboard Hero" class="w-full h-full object-cover opacity-20 dark:opacity-40 mix-blend-overlay">
@@ -20,9 +20,9 @@ import { RouterLink } from '@angular/router';
         </div>
 
         <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div class="max-w-2xl">
+          <div class="max-w-3xl">
             <p class="text-xs uppercase tracking-[0.28em] text-brand font-black drop-shadow-sm">Home</p>
-            <h1 class="mt-5 text-5xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-br from-brand-primary via-brand-accent to-brand-secondary">
+            <h1 class="mt-5 text-4xl md:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-linear-to-br from-brand-primary via-brand-accent to-brand-secondary">
               Your dashboard for {{ roleLabel }}
             </h1>
             <p class="mt-4 text-muted-var leading-7 text-lg max-w-xl">Each module below is a self-contained workflow. Tap the card for the feature your role should use today.</p>
@@ -47,18 +47,18 @@ import { RouterLink } from '@angular/router';
         <ng-container *ngIf="!uiConfig.loading()">
           <ng-container *ngIf="roleModules().length; else emptyState">
             <a *ngFor="let module of roleModules()" [routerLink]="['/', module.path]"
-               class="group relative overflow-hidden rounded-xl border border-muted bg-surface p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-brand/50">
+               class="group relative overflow-hidden rounded-2xl border border-muted bg-surface p-5 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-brand/50">
               
               <!-- Subtle hover gradient background -->
               <div class="absolute inset-0 bg-linear-to-br from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               <div class="relative z-10 flex items-center justify-between gap-3">
-                <div class="w-12 h-12 flex items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" [ngClass]="module.color">
+                <div class="w-14 h-14 flex items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" [ngClass]="module.color">
                   <lucide-icon [name]="module.icon" size="22"></lucide-icon>
                 </div>
                 <span class="text-[10px] font-black uppercase tracking-[0.28em] text-muted-var">Module</span>
               </div>
-              <h2 class="relative z-10 mt-5 text-xl font-black group-hover:text-brand transition-colors">{{ module.name }}</h2>
+              <h2 class="relative z-10 mt-4 text-xl font-black group-hover:text-brand transition-colors">{{ module.name }}</h2>
               <p class="relative z-10 mt-2 text-sm leading-6 text-muted-var">{{ module.description }}</p>
               <div class="relative z-10 mt-5 flex items-center justify-between border-t border-muted pt-4 transition-colors group-hover:border-brand/30">
                 <span class="text-xs uppercase text-brand font-black opacity-80 group-hover:opacity-100">Open Module</span>
@@ -67,7 +67,7 @@ import { RouterLink } from '@angular/router';
             </a>
           </ng-container>
           <ng-template #emptyState>
-            <div class="lg:col-span-3 border border-muted bg-surface-soft p-12 text-center">
+            <div class="lg:col-span-3 border border-muted bg-surface/90 backdrop-blur-sm-soft p-12 text-center">
               <p class="text-sm uppercase tracking-[0.28em] text-muted-var font-black">No active modules</p>
               <h2 class="mt-4 text-2xl font-black">Your role has no visible modules yet.</h2>
               <p class="mt-3 text-sm leading-6 text-muted-var">Check back after an admin activates the right workflows.</p>
