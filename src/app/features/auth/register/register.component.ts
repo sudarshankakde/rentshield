@@ -53,7 +53,7 @@ import { AUTH_FORM_STYLES } from '../shared/auth-form.styles';
                 class="input-field pl-10"
                 formControlName="firstName"
                 autocomplete="given-name"
-                placeholder="anuj"
+                placeholder="John"
               >
             </div>
 
